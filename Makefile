@@ -54,4 +54,4 @@ build-package@debian-wheezy:
 	cd ~/package && make deb
 	# Move package files
 	rm -f /srv/files/debian_wheezy/*.deb
-	mv ~/deb-build/unstable/ansible_*.deb /srv/files/debian_wheezy/ansible_{PACKAGE_VERSION}_all.deb
+	mv ~/deb-build/unstable/ansible_*.deb /srv/files/debian_wheezy/ansible_${PACKAGE_VERSION}_all.deb
