@@ -7,10 +7,7 @@ COLOR_INFO    = \033[32m
 COLOR_COMMENT = \033[33m
 
 ## Package
-PACKAGE_VERSION = 1.9.4-1
-
-## Package - Source
-PACKAGE_SOURCE = https://github.com/ansible/ansible/archive
+PACKAGE_VERSION = 1.9.4
 
 ## Help
 help:
@@ -44,14 +41,16 @@ build-packages:
 	    '
 
 build-package@debian-wheezy:
-	apt-get install -y wget python python-setuptools devscripts cdbs asciidoc python-support
-	# Get origin package
-	wget --no-check-certificate ${PACKAGE_SOURCE}/v${PACKAGE_VERSION}.tar.gz -O ~/package.tar.gz
-	# Extract origin package
-	mkdir -p ~/package
-	tar xfv ~/package.tar.gz -C ~/package --strip-components=1
+	echo "deb-src http://ftp.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list
+	echo "deb http://http.debian.net/debian wheezy-backports main" >> /etc/apt/sources.list
+	apt-get update
+	apt-get install -y dpkg-dev dh-python devscripts
+	# Get package source
+	mkdir -p ~/package && cd ~/package && apt-get source ansible
 	# Build package
-	cd ~/package && make deb
+	apt-get build-dep -y ansible
+	cd ~/package/ansible-${PACKAGE_VERSION} && debuild -us -uc
 	# Move package files
-	rm -f /srv/files/debian_wheezy/*.deb
-	mv ~/deb-build/unstable/ansible_*.deb /srv/files/debian_wheezy/ansible_${PACKAGE_VERSION}_all.deb
+	mkdir -p /srv/files/debian_wheezy
+	rm -f /srv/files/debian_wheezy/ansible_*.deb
+	mv ~/package/ansible_*.deb /srv/files/debian_wheezy
