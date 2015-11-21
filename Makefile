@@ -25,9 +25,9 @@ help:
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
 ## Build
-build: build-packages
+build: build@debian-wheezy build@debian-jessie
 
-build-packages:
+build@debian-wheezy:
 	docker run \
 	    --rm \
 	    --volume `pwd`:/srv \
@@ -38,6 +38,19 @@ build-packages:
 	        apt-get update && \
 	        apt-get install -y make && \
 	        make build-package@debian-wheezy \
+	    '
+
+build@debian-jessie:
+	docker run \
+	    --rm \
+	    --volume `pwd`:/srv \
+	    --workdir /srv \
+	    --tty \
+	    debian:jessie \
+	    sh -c '\
+	        apt-get update && \
+	        apt-get install -y make && \
+	        make build-package@debian-jessie \
 	    '
 
 build-package@debian-wheezy:
@@ -54,3 +67,17 @@ build-package@debian-wheezy:
 	mkdir -p /srv/files/debian_wheezy
 	rm -f /srv/files/debian_wheezy/ansible_*.deb
 	mv ~/package/ansible_*.deb /srv/files/debian_wheezy
+
+build-package@debian-jessie:
+	echo "deb-src http://ftp.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list
+	apt-get update
+	apt-get install -y dpkg-dev dh-python devscripts
+	# Get package source
+	mkdir -p ~/package && cd ~/package && apt-get source ansible
+	# Build package
+	apt-get build-dep -y ansible
+	cd ~/package/ansible-${PACKAGE_VERSION} && debuild -us -uc
+	# Move package files
+	mkdir -p /srv/files/debian_jessie
+	rm -f /srv/files/debian_jessie/ansible_*.deb
+	mv ~/package/ansible_*.deb /srv/files/debian_jessie
