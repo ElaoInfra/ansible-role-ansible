@@ -6,9 +6,6 @@ COLOR_RESET   = \033[0m
 COLOR_INFO    = \033[32m
 COLOR_COMMENT = \033[33m
 
-## Package
-PACKAGE_VERSION = 1.9.4
-
 ## Help
 help:
 	printf "${COLOR_COMMENT}Usage:${COLOR_RESET}\n"
@@ -57,27 +54,23 @@ build-package@debian-wheezy:
 	echo "deb-src http://ftp.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list
 	echo "deb http://http.debian.net/debian wheezy-backports main" >> /etc/apt/sources.list
 	apt-get update
-	apt-get install -y dpkg-dev dh-python devscripts
-	# Get package source
-	mkdir -p ~/package && cd ~/package && apt-get source ansible
-	# Build package
-	apt-get build-dep -y ansible
-	cd ~/package/ansible-${PACKAGE_VERSION} && debuild -us -uc
+	apt-get install -y dh-python debian-keyring
+	apt-get build-dep -y ansible python-jinja2 ansible
+	# Build packages
+	mkdir -p ~/package && cd ~/package && apt-get source --compile python-jinja2 ansible
 	# Move package files
 	mkdir -p /srv/files/debian_wheezy
-	rm -f /srv/files/debian_wheezy/ansible_*.deb
-	mv ~/package/ansible_*.deb /srv/files/debian_wheezy
+	rm -f /srv/files/debian_wheezy/*.deb
+	mv ~/package/ansible_*.deb ~/package/python-jinja2_*.deb /srv/files/debian_wheezy
 
 build-package@debian-jessie:
 	echo "deb-src http://ftp.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list
 	apt-get update
-	apt-get install -y dpkg-dev dh-python devscripts
-	# Get package source
-	mkdir -p ~/package && cd ~/package && apt-get source ansible
-	# Build package
-	apt-get build-dep -y ansible
-	cd ~/package/ansible-${PACKAGE_VERSION} && debuild -us -uc
+	apt-get install -y dh-python debian-keyring
+	apt-get build-dep -y ansible python-jinja2 ansible
+	# Build packages
+	mkdir -p ~/package && cd ~/package && apt-get source --compile python-jinja2 ansible
 	# Move package files
 	mkdir -p /srv/files/debian_jessie
-	rm -f /srv/files/debian_jessie/ansible_*.deb
-	mv ~/package/ansible_*.deb /srv/files/debian_jessie
+	rm -f /srv/files/debian_jessie/*.deb
+	mv ~/package/ansible_*.deb ~/package/python-jinja2_*.deb /srv/files/debian_jessie
